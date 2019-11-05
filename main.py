@@ -1,7 +1,15 @@
+#%matplotlib inline
 import gym
-env = gym.make('CartPole-v0')
-env.reset()
-env.render()
-for _ in range(1000):
-	env.step(env.action_space.sample())
-env.close()
+import math
+import random
+import numpy as numpy
+import matplotlib
+import matplotlib.pyplot as plt
+from collections import namedtuple
+from intertools import count
+from PIL import Image
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as functional
+import torchvision.transforms as T
