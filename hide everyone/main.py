@@ -6,7 +6,7 @@ import numpy as numpy
 import matplotlib
 import matplotlib.pyplot as plt
 from collections import namedtuple
-from more_intertools import count
+from intertools import count
 from PIL import Image
 import torch
 import torch.nn as nn
