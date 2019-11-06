@@ -1,3 +1,8 @@
+import gym
+import numpy as np
+import torch
+import torchvision.transforms as T
+
 class CartPoleEnvManager():
 	def __init__(self, device):
 		self.device = device
@@ -27,7 +32,7 @@ class CartPoleEnvManager():
 	def just_starting(self):
 		return self.current_screen is None
 
-	def get_State(self):
+	def get_state(self):
 		if self.just_starting() or self.done:
 			self.current_screen = self.get_processed_screen()
 			black_screen = torch.zeros_like(self.current_screen)
@@ -67,7 +72,7 @@ class CartPoleEnvManager():
 		screen = torch.from_numpy(screen)
 
 		# Use torchvision package to compose image transforms
-		resize = T.Complose([
+		resize = T.Compose([
 			T.ToPILImage()
 			,T.Resize((40,90))
 			,T.ToTensor()
