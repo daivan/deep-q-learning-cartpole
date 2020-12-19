@@ -19,9 +19,9 @@ from AcroBotEnvManager import AcroBotEnvManager
 from EpsilonGreedyStrategy import EpsilonGreedyStrategy
 from Agent import Agent
 from ReplayMemory import ReplayMemory
-#from DQN import DQN
-#from Experience import Experience
-#from QValues import QValues
+from DQN import DQN
+from Experience import Experience
+from QValues import QValues
 
 
 # initiate variables
@@ -52,6 +52,15 @@ agent = Agent(strategy, em.num_actions_available(),device)
 
 # Handles DQN memory of all the games youve played. Database of your previous games
 memory = ReplayMemory(memory_size)
+
+
+#  DQN policies
+policy_net = DQN(em.get_screen_height(), em.get_screen_width()).to(device)
+target_net = DQN(em.get_screen_height(), em.get_screen_width()).to(device)
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+optimizer = optim.Adam(params = policy_net.parameters(), lr=lr)
+
 
 env = gym.make('Acrobot-v1')
 
