@@ -1,6 +1,4 @@
 #%matplotlib inline
-import gym
-
 import math
 import random
 import numpy as numpy
@@ -26,7 +24,7 @@ from QValues import QValues
 
 # initiate variables
 
-batch_size = 256
+batch_size = 50
 gamma = 0.999
 
 eps_start = 1
@@ -62,16 +60,84 @@ target_net.eval()
 optimizer = optim.Adam(params = policy_net.parameters(), lr=lr)
 
 
-env = gym.make('Acrobot-v1')
 
-for i_episode in range(20):
-    observation = env.reset()
-    for t in range(100):
-        env.render()
-        print(observation)
-        action = env.action_space.sample()
-        observation, reward, done, info = env.step(action)
-        if done:
-            print("Episode finished after {} timesteps".format(t+1))
+def plot(values, moving_avg_period):
+    plt.figure(2)
+    plt.clf()
+    plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Score')
+    plt.plot(values)
+
+    moving_avg = get_moving_average(moving_avg_period, values)
+    plt.plot(moving_avg)
+    plt.pause(0.001)
+    print("Episiode", len(values), "\n", moving_avg_period, "episode moving avg:", values[-1])
+
+def get_moving_average(period, values):
+    values = torch.tensor(values, dtype=torch.float)
+    if len(values) >= period:
+        moving_avg = values.unfold(dimension=0, size=period, step=1).mean(dim=1).flatten(start_dim=0)
+        moving_avg = torch.cat((torch.zeros(period-1), moving_avg))
+        return moving_avg.numpy()
+    
+    else:
+        moving_avg= torch.zeros(len(values))
+        return moving_avg.numpy()
+
+
+def extract_tensors(experiences):
+    batch = Experience(*zip(*experiences))
+
+    t1 = torch.cat(batch.state)
+    t2 = torch.cat(batch.action)
+    t3 = torch.cat(batch.reward)
+    t4 = torch.cat(batch.next_state)
+
+    return (t1,t2,t3,t4)
+
+episode_durations = []
+for episode in range(num_episodes):
+    em.reset()
+    state = em.get_state()
+    
+    score = 0
+    
+    for timestep in count():
+        #print(timestep)
+        action = agent.select_action(state, policy_net)
+        #reward = em.take_action(action)
+        reward, real_reward = em.take_action(action)
+        score = score + real_reward
+        next_state = em.get_state()
+        
+        memory.push(Experience(state, action, next_state, reward))
+        state = next_state
+
+        if memory.can_provide_sample(batch_size):
+
+            experiences = memory.sample(batch_size)
+
+            states, actions, rewards, next_states = extract_tensors(experiences)
+
+   
+            current_q_values = QValues.get_current(policy_net, states, actions)
+            next_q_values = QValues.get_next(target_net, next_states)
+            target_q_values = (next_q_values * gamma) + reward
+
+            loss = F.mse_loss(current_q_values, target_q_values.unsqueeze(1))
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        if em.done:
+        #if timestep>100:
+            #print('do we ever get here?')
+            episode_durations.append(score)
+            plot(episode_durations, 100)
             break
-env.close()
+
+    if episode % target_update == 0:
+        target_net.load_state_dict(policy_net.state_dict())
+
+em.close()

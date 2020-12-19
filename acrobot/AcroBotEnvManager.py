@@ -6,7 +6,8 @@ import torchvision.transforms as T
 class AcroBotEnvManager():
 	def __init__(self, device):
 		self.device = device
-		self.env = gym.make('CartPole-v0').unwrapped
+		self.env = gym.make('Acrobot-v1')
+		#self.env = gym.make('CartPole-v0').unwrapped
 		self.env.reset()
 		self.current_screen = None
 		self.done = False
@@ -27,7 +28,11 @@ class AcroBotEnvManager():
 
 	def take_action(self, action):
 		_, reward, self.done, _ = self.env.step(action.item())
-		return torch.tensor([reward], device = self.device)
+		return [torch.tensor([reward], device = self.device), reward]
+
+	def take_action_raw(self, action):
+		return self.env.step(action.item())
+		
 
 	def just_starting(self):
 		return self.current_screen is None

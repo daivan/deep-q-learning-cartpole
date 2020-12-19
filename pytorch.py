@@ -38,6 +38,9 @@ strategy = EpsilonGreedyStrategy(eps_start,eps_end,eps_decay)
 agent = Agent(strategy, em.num_actions_available(),device)
 memory = ReplayMemory(memory_size)
 
+print(em.get_screen_height())
+print(em.get_screen_width())
+
 policy_net = DQN(em.get_screen_height(), em.get_screen_width()).to(device)
 target_net = DQN(em.get_screen_height(), em.get_screen_width()).to(device)
 target_net.load_state_dict(policy_net.state_dict())
